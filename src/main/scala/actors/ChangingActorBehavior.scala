@@ -1,7 +1,6 @@
 package actors
 
-import actors.ChangingActorBehavior.Counter.Increment
-import actors.ChangingActorBehavior.Mom.{CHOCOLATE, MomStart}
+import actors.ChangingActorBehavior.Mom.MomStart
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 
 object ChangingActorBehavior extends App {
@@ -11,26 +10,6 @@ object ChangingActorBehavior extends App {
     case object KidAccept
 
     case object KidReject
-
-    val HAPPY = "happy"
-    val SAD = "sad"
-
-  }
-
-  class FussyKid extends Actor {
-
-    import FussyKid._
-    import Mom._
-
-    var state = HAPPY
-
-    override def receive: Receive = {
-      case Food(VEGETABLE) => state = SAD
-      case Food(CHOCOLATE) => state = HAPPY
-      case Ask(_) =>
-        if (state == HAPPY) sender() ! KidAccept
-        else sender() ! KidReject
-    }
 
   }
 
@@ -73,10 +52,9 @@ object ChangingActorBehavior extends App {
     import FussyKid._
 
     override def receive: Receive = {
-      case MomStart(kidRef) => {
+      case MomStart(kidRef) =>
         kidRef ! Food(VEGETABLE)
         kidRef ! Ask("Do you want to play?")
-      }
       case KidAccept => println("Yay, my kid is happy.")
       case KidReject => println("My kid is sad, but at least he is healthy...")
     }
@@ -84,7 +62,6 @@ object ChangingActorBehavior extends App {
   }
 
   val system = ActorSystem("changingActorBehavior")
-  val kid = system.actorOf(Props[FussyKid], "fussyKid")
   val mom = system.actorOf(Props[Mom], "mom")
   val statelessFussyKid = system.actorOf(Props[StatelessFussyKid], "statelessFussyKid")
 
@@ -142,7 +119,7 @@ object ChangingActorBehavior extends App {
     def counterReceiveHandler(count: Int): Receive = {
       case Increment => context.become(counterReceiveHandler(count + 1), discardOld = false)
       case Decrement => context.become(counterReceiveHandler(count - 1), discardOld = false)
-      case Print => println(s"Current counter is: ${count}")
+      case Print => println(s"Current counter is: $count")
     }
 
   }

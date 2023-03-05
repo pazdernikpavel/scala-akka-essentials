@@ -87,7 +87,12 @@ object ChangingActorBehavior extends App {
   val mom = system.actorOf(Props[Mom], "mom")
   val statelessFussyKid = system.actorOf(Props[StatelessFussyKid], "statelessFussyKid")
 
-  mom ! MomStart(kid)
   mom ! MomStart(statelessFussyKid)
+  /*
+  *   Mom receives MomStart
+  *     Kid receives Food(vegetable) -> Kid will change the handler to SadReceive
+  *     Kid receives Ask(play?) -> Kid replies with SadReceive handler
+  *   Mom receives KidReject
+  */
 
 }

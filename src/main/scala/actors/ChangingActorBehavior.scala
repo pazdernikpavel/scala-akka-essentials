@@ -102,6 +102,7 @@ object ChangingActorBehavior extends App {
   */
 
   /* EXERCISE 1 */
+
   object Counter {
     case object Increment
 
@@ -136,4 +137,65 @@ object ChangingActorBehavior extends App {
   counter ! Print
   counter ! Decrement
   counter ! Print
+
+  /* EXERCISE 2 */
+
+  case class Vote(candidate: String)
+
+  case object VoteStatusRequest
+
+  case class VoteStatusReply(candidate: Option[String])
+
+  case class AggregateVotes(citizens: Set[ActorRef])
+
+  case object PrintAggregatedVotes
+
+  class Citizen extends Actor {
+    override def receive: Receive = citizenReceiveHandler()
+
+    def citizenReceiveHandler(votedCandidate: String = null): Receive = {
+      case Vote(newCandidate) => context.become(citizenReceiveHandler(newCandidate))
+      case VoteStatusRequest =>
+        sender() ! VoteStatusReply(Option(votedCandidate))
+    }
+  }
+
+  class VoteAggregator extends Actor {
+
+    var votes: Map[String, Int] = Map()
+
+    override def receive: Receive = {
+      case VoteStatusReply(Some(candidate)) => {
+        val currVotes = votes.getOrElse(candidate, 0)
+        votes += (candidate -> (currVotes + 1))
+      }
+      case AggregateVotes(candidates) => candidates.foreach(candidate => candidate ! VoteStatusRequest)
+      case PrintAggregatedVotes => println(votes)
+    }
+
+  }
+
+  val alice = system.actorOf(Props[Citizen])
+  val bob = system.actorOf(Props[Citizen])
+  val charlie = system.actorOf(Props[Citizen])
+  val daniel = system.actorOf(Props[Citizen])
+
+  alice ! Vote("Martin")
+  bob ! Vote("Jonas")
+  charlie ! Vote("Roland")
+  daniel ! Vote("Roland")
+
+  val voteAggregator = system.actorOf(Props[VoteAggregator])
+  voteAggregator ! AggregateVotes(Set(alice, bob, charlie, daniel))
+  voteAggregator ! PrintAggregatedVotes
+
+  /*
+    Print the status of the votes
+
+    Martin -> 1
+    Jonas -> 1
+    Roland -> 2
+
+  */
+
 }

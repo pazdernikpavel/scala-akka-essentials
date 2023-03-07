@@ -1,4 +1,5 @@
 val akkaVersion = "2.5.13"
+val scalaTestVersion = "3.0.5"
 
 lazy val root = (project in file("."))
   .settings(
@@ -8,6 +9,6 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
-      "org.scalatest" %% "scalatest" % "3.0.5",
+      "org.scalatest" %% "scalatest" % scalaTestVersion
     )
   )
